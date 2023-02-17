@@ -1,39 +1,40 @@
 import {
+  AfterContentInit,
+  ContentChild,
+  ContentChildren,
   Directive,
   ElementRef,
   Input,
-  Renderer2,
-  ContentChild,
-  ContentChildren,
   QueryList,
-  AfterContentInit,
+  Renderer2,
 } from '@angular/core';
-import { IonToolbar, IonButtons, IonTitle } from '@ionic/angular';
+import { IonButtons, IonTitle, IonToolbar } from '@ionic/angular';
 import toPx from 'to-px';
 
 @Directive({
+  // eslint-disable-next-line @angular-eslint/directive-selector
   selector: 'ion-header[parallax]',
 })
 export class ParallaxDirective implements AfterContentInit {
-  @Input() imageUrl: string;
-  @Input() color: string;
+  @Input() imageUrl!: string;
+  @Input() color?: string;
   @Input() height: string | number = 300;
   @Input() bgPosition: 'top' | 'center' | 'bottom' = 'top';
 
-  imageOverlay: HTMLElement;
-  private toolbarBackground: HTMLElement;
-  private innerScroll: HTMLElement;
+  imageOverlay!: HTMLElement;
+  private toolbarBackground!: HTMLElement;
+  private innerScroll!: HTMLElement;
   private originalToolbarHeight = 0;
   private ticking = false;
-  private toolbarContainer: HTMLDivElement;
+  private toolbarContainer!: HTMLDivElement;
 
-  @ContentChild(IonTitle, { static: false }) ionTitle: IonTitle & {
+  @ContentChild(IonTitle, { static: false }) ionTitle!: IonTitle & {
     el: HTMLIonTitleElement;
   };
-  @ContentChild(IonToolbar, { static: false }) ionToolbar: IonToolbar & {
+  @ContentChild(IonToolbar, { static: false }) ionToolbar!: IonToolbar & {
     el: HTMLIonToolbarElement;
   };
-  @ContentChildren(IonButtons) ionButtons: QueryList<
+  @ContentChildren(IonButtons) ionButtons?: QueryList<
     IonButtons & { el: HTMLElement }
   >;
 
@@ -73,7 +74,7 @@ export class ParallaxDirective implements AfterContentInit {
   }
 
   getMaxHeightInPx() {
-    return toPx(this.getMaxHeightWithUnits());
+    return toPx(this.getMaxHeightWithUnits()) as number;
   }
 
   private initElements() {
@@ -82,7 +83,7 @@ export class ParallaxDirective implements AfterContentInit {
       return false;
     }
 
-    const parentElement = this.header.parentElement;
+    const parentElement = this.header.parentElement as HTMLElement;
     const ionContent = parentElement.querySelector('ion-content');
 
     if (!ionContent) {
@@ -90,40 +91,50 @@ export class ParallaxDirective implements AfterContentInit {
       return false;
     }
 
-    this.innerScroll = ionContent.shadowRoot.querySelector(
+    this.innerScroll = (ionContent.shadowRoot as ShadowRoot).querySelector(
       '.inner-scroll'
     ) as HTMLElement;
 
     this.originalToolbarHeight = this.ionToolbar.el.offsetHeight;
 
-    this.toolbarContainer =
-      this.ionToolbar.el.shadowRoot.querySelector('.toolbar-container');
-
-    this.toolbarBackground = this.ionToolbar.el.shadowRoot.querySelector(
-      '.toolbar-background'
-    );
-    this.color = this.color || window.getComputedStyle(this.toolbarBackground).backgroundColor;
     this.renderer.setStyle(this.toolbarContainer, 'align-items', 'baseline');
+    this.toolbarContainer = (
+      this.ionToolbar.el.shadowRoot as ShadowRoot
+    ).querySelector('.toolbar-container') as HTMLDivElement;
+
+    this.toolbarBackground = (
+      this.ionToolbar.el.shadowRoot as ShadowRoot
+    ).querySelector('.toolbar-background') as HTMLElement;
+    this.color =
+      this.color ||
+      window.getComputedStyle(this.toolbarBackground).backgroundColor;
     return true;
   }
 
   private setupPointerEventsForButtons() {
     this.renderer.setStyle(this.header, 'pointer-events', 'none');
-    this.ionToolbar
-      .el
+    this.ionToolbar.el
       .querySelectorAll('ion-buttons')
-      .forEach(item => this.renderer.setStyle(item, 'pointer-events', 'all'));
+      .forEach((item) => this.renderer.setStyle(item, 'pointer-events', 'all'));
   }
 
   private setupContentPadding() {
-    const parentElement = this.header.parentElement;
-    const ionContent = parentElement.querySelector('ion-content');
-    const mainContent = ionContent.shadowRoot.querySelector('main');
+    const parentElement = this.header.parentElement as HTMLElement;
+    const ionContent = parentElement.querySelector(
+      'ion-content'
+    ) as HTMLIonContentElement;
+    const mainContent = (ionContent.shadowRoot as ShadowRoot).querySelector(
+      'main'
+    ) as HTMLElement;
     const { paddingTop } = window.getComputedStyle(mainContent);
-    const contentPaddingPx = toPx(paddingTop);
-    const coverHeightPx = this.getMaxHeightInPx();
+    const contentPaddingPx = toPx(paddingTop) as number;
+    const coverHeightPx = this.getMaxHeightInPx() as number;
     this.renderer.setStyle(this.header, 'position', 'absolute');
-    this.renderer.setStyle(this.innerScroll, 'padding-top', `${contentPaddingPx + coverHeightPx}px`);
+    this.renderer.setStyle(
+      this.innerScroll,
+      'padding-top',
+      `${contentPaddingPx + coverHeightPx}px`
+    );
   }
 
   private setupImageOverlay() {
@@ -151,7 +162,7 @@ export class ParallaxDirective implements AfterContentInit {
   }
 
   private setupEvents() {
-    this.innerScroll.addEventListener('scroll', (_event) => {
+    this.innerScroll.addEventListener('scroll', () => {
       if (!this.ticking) {
         window.requestAnimationFrame(() => {
           this.updateProgress();
