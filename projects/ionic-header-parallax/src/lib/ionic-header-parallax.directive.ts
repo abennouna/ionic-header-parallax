@@ -97,7 +97,6 @@ export class ParallaxDirective implements AfterContentInit {
 
     this.originalToolbarHeight = this.ionToolbar.el.offsetHeight;
 
-    this.renderer.setStyle(this.toolbarContainer, 'align-items', 'baseline');
     this.toolbarContainer = (
       this.ionToolbar.el.shadowRoot as ShadowRoot
     ).querySelector('.toolbar-container') as HTMLDivElement;
@@ -108,6 +107,7 @@ export class ParallaxDirective implements AfterContentInit {
     this.color =
       this.color ||
       window.getComputedStyle(this.toolbarBackground).backgroundColor;
+    this.renderer.setStyle(this.toolbarContainer, 'align-items', 'flex-start');
     return true;
   }
 
